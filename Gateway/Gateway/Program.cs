@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using Gateway.Listener;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
 namespace Gateway
@@ -7,16 +10,13 @@ namespace Gateway
     {
         public static void Main(string[] args)
         {
-            BuildWebHost(args)
-                .Run();
-        }
-
-        private static IWebHost BuildWebHost(string[] args)
-        {
-            var builder = WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .Build();
-            return builder;
+            var prefixes = new[] { "http://localhost:40404/" };
+            var listener = new AsyncListener(prefixes) as IAsyncListener;
+            listener.Schedule();
+            
+            Thread.Sleep(100000);
+            
+            listener.Stop();
         }
     }
 }
