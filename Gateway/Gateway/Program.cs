@@ -1,8 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Threading;
+﻿using System.Threading;
 using Gateway.Listener;
-using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
+using Gateway.Router;
 
 namespace Gateway
 {
@@ -10,13 +8,15 @@ namespace Gateway
     {
         public static void Main(string[] args)
         {
+            var registratorRouter = new RegistratorRouter() as IRouter;
+            
             var prefixes = new[] { "http://localhost:40404/" };
-            var listener = new AsyncListener(prefixes) as IAsyncListener;
-            listener.Schedule();
+            var registratorListener = new AsyncListener(prefixes, registratorRouter) as IAsyncListener;
+            registratorListener.Schedule();
             
             Thread.Sleep(100000);
             
-            listener.Stop();
+            registratorListener.Stop();
         }
     }
 }
