@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Net;
-using System.Text;
-using System.Threading;
+using Gateway.Router;
 
 namespace Gateway.Listener
 {
     public class AsyncListener : IAsyncListener
     {
         private readonly HttpListener _listener;
+        private readonly IRouter _router;
 
         private bool _isRunning;
         
-        public AsyncListener(string[] prefixes)
+        public AsyncListener(string[] prefixes, IRouter router)
         {
             _listener = new HttpListener();
             for (var i = 0; i < prefixes.Length; i++)
@@ -19,6 +19,8 @@ namespace Gateway.Listener
                 _listener.Prefixes.Add(prefixes[i]);
             }
 
+            _router = router;
+            
             _isRunning = false;
         }
 
@@ -65,16 +67,9 @@ namespace Gateway.Listener
             var request = context.Request;
             var response = context.Response;
 
-            // TODO: DO NORMAL ROUTING
-            var threadId = Thread.CurrentThread.ManagedThreadId;
-            var buffer = Encoding.UTF8.GetBytes($"Hello from thread {threadId}!");
-            response.ContentLength64 = buffer.Length;
+            _router.Route(request, response);
 
-            var output = response.OutputStream;
-            output.Write(buffer, 0, buffer.Length);
-            output.Close();
-
-            Thread.Sleep(10000);
+            response.Close();
         }
     }
 }
