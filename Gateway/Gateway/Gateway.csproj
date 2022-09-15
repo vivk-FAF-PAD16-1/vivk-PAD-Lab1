@@ -253,6 +253,9 @@
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="Router\IRouter.cs" />
         <Compile Include="Router\RegistratorRouter.cs" />
+        <Compile Include="Storage\Destination.cs" />
+        <Compile Include="Storage\IStorage.cs" />
+        <Compile Include="Storage\RouteStorage.cs" />
     </ItemGroup>
     <ItemGroup>
       <None Include="App.config" />

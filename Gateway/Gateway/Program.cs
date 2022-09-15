@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using Gateway.Listener;
 using Gateway.Router;
+using Gateway.Storage;
 
 namespace Gateway
 {
@@ -8,7 +9,9 @@ namespace Gateway
     {
         public static void Main(string[] args)
         {
-            var registratorRouter = new RegistratorRouter() as IRouter;
+            var storage = new RouteStorage() as IStorage;
+            
+            var registratorRouter = new RegistratorRouter(storage) as IRouter;
             
             var prefixes = new[] { "http://localhost:40404/" };
             var registratorListener = new AsyncListener(prefixes, registratorRouter) as IAsyncListener;
