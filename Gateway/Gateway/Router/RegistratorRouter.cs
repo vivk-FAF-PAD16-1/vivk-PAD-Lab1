@@ -1,17 +1,24 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Text;
 using System.Text.Json;
 using Gateway.Common;
+using Gateway.Storage;
 
 namespace Gateway.Router
 {
     public class RegistratorRouter : IRouter
     {
+        private IStorage _storage;
+        
         private const string NotFoundMessage = "OLEG NOT FOUND!";
         private const int NotFoundStatus = 404;
         
         private const string Post = "POST";
+
+        public RegistratorRouter(IStorage storage)
+        {
+            _storage = storage;
+        }
         
         public void Route(HttpListenerRequest request, HttpListenerResponse response)
         {
@@ -48,8 +55,7 @@ namespace Gateway.Router
                 return;
             }
             
-            // TODO: WRITE IN ROUTES STORAGE
-            Console.WriteLine($"{route.Endpoint} {route.DestinationUri}");
+            _storage.Register(route.Endpoint, route.DestinationUri);
         }
 
         private void NotFound(HttpListenerResponse response)
