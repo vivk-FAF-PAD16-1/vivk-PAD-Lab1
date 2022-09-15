@@ -13,11 +13,17 @@ namespace Gateway
             
             var registratorRouter = new RegistratorRouter(storage) as IRouter;
             
-            var prefixes = new[] { "http://localhost:40404/" };
-            var registratorListener = new AsyncListener(prefixes, registratorRouter) as IAsyncListener;
+            var prefixes0 = new[] { "http://localhost:40404/" };
+            var registratorListener = new AsyncListener(prefixes0, registratorRouter) as IAsyncListener;
             registratorListener.Schedule();
+
+            var gatewayRouter = new GatewayRouter(storage);
             
-            Thread.Sleep(100000);
+            var prefexes1 = new[] { "http://localhost:40405/" };
+            var gatewayListener = new AsyncListener(prefexes1, gatewayRouter) as IAsyncListener;
+            gatewayListener.Schedule();
+            
+            Thread.Sleep(1000000);
             
             registratorListener.Stop();
         }
