@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Gateway.Common;
 
 namespace Gateway.Storage
 {
@@ -23,17 +24,18 @@ namespace Gateway.Storage
         {
             lock (_locker)
             {
-                var contains = _storage.ContainsKey(endpoint);
+                var key = endpoint.TrimWeb();
+                var contains = _storage.ContainsKey(key);
                 DestinationContainer destinationContainer = null;
                 
                 if (contains == false)
                 {
                     destinationContainer = new DestinationContainer();
-                    _storage.Add(endpoint, destinationContainer);
+                    _storage.Add(key, destinationContainer);
                 }
                 else
                 {
-                    destinationContainer = _storage[endpoint];
+                    destinationContainer = _storage[key];
                 }
                 
                 destinationContainer.Add(destinationUri);
@@ -59,15 +61,42 @@ namespace Gateway.Storage
         {
             lock (_locker)
             {
-                var contains = _storage.ContainsKey(endpoint);
-                if (contains == false)
+                var (ok0, key, param) = TrySplitKeyParams(endpoint);
+                if (ok0 == false)
                 {
                     return (false, null);
                 }
 
-                var destinationContainer = _storage[endpoint];
-                return destinationContainer.TryGet();
+                var destinationContainer = _storage[key];
+                var (ok1, uri) = destinationContainer.TryGet();
+                if (ok1 == false)
+                {
+                    return (false, null);
+                }
+
+                return (true, uri + param);
             }
+        }
+
+        private (bool, string, string) TrySplitKeyParams(string endpoint)
+        {
+            var keys = _storage.Keys;
+            foreach (var key in keys)
+            {
+                var valid = endpoint.StartWith(key);
+                if (valid)
+                {
+                    var startIndex = key.Length;
+                    var endIndex = endpoint.Length;
+                    var param = startIndex == endIndex 
+                        ? string.Empty 
+                        : endpoint.Substring(startIndex, endIndex - startIndex);
+                    
+                    return (true, key, param);
+                }
+            }
+
+            return (false, null, null);
         }
     }
 }
