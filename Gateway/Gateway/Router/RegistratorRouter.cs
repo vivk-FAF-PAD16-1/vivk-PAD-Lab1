@@ -9,10 +9,7 @@ namespace Gateway.Router
     public class RegistratorRouter : IRouter
     {
         private IStorage _storage;
-        
-        private const string NotFoundMessage = "OLEG NOT FOUND!";
-        private const int NotFoundStatus = 404;
-        
+
         private const string Post = "POST";
 
         public RegistratorRouter(IStorage storage)
@@ -24,26 +21,26 @@ namespace Gateway.Router
         {
             if (request.HttpMethod != Post)
             {
-                NotFound(response);
+                HttpUtilities.NotFoundResponse(response);
                 return;
             }
 
             if (request.Url.Segments.Length != 1)
             {
-                NotFound(response);
+                HttpUtilities.NotFoundResponse(response);
                 return; 
             }
 
             if (request.HasEntityBody == false)
             {
-                NotFound(response);
+                HttpUtilities.NotFoundResponse(response);
                 return; 
             }
 
             var json = HttpUtilities.ReadRequestBody(request);
             if (JsonUtilities.IsValid(json) == false)
             {
-                NotFound(response);
+                HttpUtilities.NotFoundResponse(response);
                 return;  
             }
             
@@ -51,24 +48,11 @@ namespace Gateway.Router
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (route.IsValid == false)
             {
-                NotFound(response);
+                HttpUtilities.NotFoundResponse(response);
                 return;
             }
             
             _storage.Register(route.Endpoint, route.DestinationUri);
-        }
-
-        private void NotFound(HttpListenerResponse response)
-        {
-            var buffer = Encoding.UTF8.GetBytes(NotFoundMessage);
-            
-            response.ContentEncoding = Encoding.UTF8;
-            response.ContentLength64 = buffer.Length;
-            response.StatusCode = NotFoundStatus;
-            
-            var output = response.OutputStream;
-            output.Write(buffer, 0, buffer.Length);
-            output.Close();
         }
     }
 }

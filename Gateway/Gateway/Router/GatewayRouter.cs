@@ -8,10 +8,7 @@ namespace Gateway.Router
 	public class GatewayRouter : IRouter
 	{
 		private IStorage _storage;
-        
-        private const string NotFoundMessage = "OLEG NOT FOUND!";
-        private const int NotFoundStatus = 404;
-
+		
         public GatewayRouter(IStorage storage)
         {
             _storage = storage;
@@ -22,7 +19,7 @@ namespace Gateway.Router
 			var (ok, uri) = _storage.TryGet(endpoint);
 			if (ok == false)
 			{
-				// TODO: NOT FOUND
+				HttpUtilities.NotFoundResponse(response);
 				return;
 			}
 			

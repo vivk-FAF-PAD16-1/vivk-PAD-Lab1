@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 
 namespace Gateway.Common
 {
@@ -18,6 +19,22 @@ namespace Gateway.Common
             body.Close();
 
             return content;
+        }
+        
+        private const string NotFoundMessage = "OLEG NOT FOUND!";
+        private const int NotFoundStatus = 404;
+        
+        public static void NotFoundResponse(HttpListenerResponse response)
+        {
+            var buffer = Encoding.UTF8.GetBytes(NotFoundMessage);
+            
+            response.ContentEncoding = Encoding.UTF8;
+            response.ContentLength64 = buffer.Length;
+            response.StatusCode = NotFoundStatus;
+            
+            var output = response.OutputStream;
+            output.Write(buffer, 0, buffer.Length);
+            output.Close();
         }
 
         private static readonly char[] WebCharacters = { '/', '\\' };
