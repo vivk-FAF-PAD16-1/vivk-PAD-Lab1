@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
+using System.Text;
 using Gateway.Common;
 using Gateway.Storage;
 
@@ -22,8 +24,15 @@ namespace Gateway.Router
 				HttpUtilities.NotFoundResponse(response);
 				return;
 			}
+
+			var requestContent = HttpUtilities.ReadRequestBody(request);
+
+			var client = new HttpClient();
+			var newRequest = new HttpRequestMessage(new HttpMethod(request.HttpMethod), uri);
+			newRequest.Content = new StringContent(requestContent, Encoding.UTF8, request.ContentType);
 			
-			Console.WriteLine(uri);
+			// TODO: Send request
+			// var newResponse = await client.SendAsync(newRequest);
 		}
 	}
 }
