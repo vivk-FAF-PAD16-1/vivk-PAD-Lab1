@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 
 namespace Gateway.Common
@@ -19,6 +20,11 @@ namespace Gateway.Common
             body.Close();
 
             return content;
+        }
+        
+        public static string ReadResponseBody(HttpResponseMessage response)
+        {
+            return response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
         }
         
         private const string NotFoundMessage = "OLEG NOT FOUND!";
