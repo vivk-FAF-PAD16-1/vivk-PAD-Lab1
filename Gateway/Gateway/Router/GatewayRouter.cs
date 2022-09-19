@@ -14,6 +14,7 @@ namespace Gateway.Router
         {
             _storage = storage;
         }
+        
 		public void Route(HttpListenerRequest request, HttpListenerResponse response)
 		{
 			var endpoint = request.Url.AbsolutePath.TrimWeb();
@@ -23,7 +24,12 @@ namespace Gateway.Router
 				HttpUtilities.NotFoundResponse(response);
 				return;
 			}
+			
+			// TODO: Configure response with uri data
+		}
 
+		public void ResendData(HttpListenerRequest request, HttpListenerResponse response, string uri)
+		{
 			var requestContent = HttpUtilities.ReadRequestBody(request);
 
 			var client = new HttpClient();
