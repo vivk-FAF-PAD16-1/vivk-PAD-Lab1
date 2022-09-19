@@ -8,13 +8,13 @@ using Discovery.Storage;
 
 namespace Discovery.Router
 {
-	public class GatewayRouter : IRouter
+	public class DiscoveryRouter : IRouter
 	{
 		private const string Get = "GET";
 		
 		private readonly IStorage _storage;
 		
-        public GatewayRouter(IStorage storage)
+        public DiscoveryRouter(IStorage storage)
         {
             _storage = storage;
         }

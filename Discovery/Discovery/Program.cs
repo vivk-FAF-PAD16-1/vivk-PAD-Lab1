@@ -17,11 +17,11 @@ namespace Discovery
             var registratorListener = new AsyncListener(prefixes0, registratorRouter) as IAsyncListener;
             registratorListener.Schedule();
 
-            var gatewayRouter = new GatewayRouter(storage);
+            var discoveryRouter = new DiscoveryRouter(storage);
             
             var prefexes1 = new[] { "http://localhost:40405/" };
-            var gatewayListener = new AsyncListener(prefexes1, gatewayRouter) as IAsyncListener;
-            gatewayListener.Schedule();
+            var discoveryListener = new AsyncListener(prefexes1, discoveryRouter) as IAsyncListener;
+            discoveryListener.Schedule();
             
             Thread.Sleep(1000000);
             
