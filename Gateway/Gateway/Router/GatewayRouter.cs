@@ -2,13 +2,17 @@
 using System.Net.Http;
 using System.Text;
 using Gateway.Common;
+using Gateway.Common.Data;
 using Gateway.Storage;
+using System.Text.Json;
 
 namespace Gateway.Router
 {
 	public class GatewayRouter : IRouter
 	{
-		private IStorage _storage;
+		private const string Get = "GET";
+		
+		private readonly IStorage _storage;
 		
         public GatewayRouter(IStorage storage)
         {
@@ -17,6 +21,12 @@ namespace Gateway.Router
         
 		public void Route(HttpListenerRequest request, HttpListenerResponse response)
 		{
+			if (request.HttpMethod != Get)
+            {
+                HttpUtilities.NotFoundResponse(response);
+                return;
+            }
+			
 			var endpoint = request.Url.AbsolutePath.TrimWeb();
 			var (ok, uri) = _storage.TryGet(endpoint);
 			if (ok == false)
@@ -25,7 +35,10 @@ namespace Gateway.Router
 				return;
 			}
 			
-			// TODO: Configure response with uri data
+			var uriData = new UriData(uri);
+			var jsonData = JsonSerializer.Serialize(uriData);
+			
+			HttpUtilities.SendResponseMessage(response, jsonData);
 		}
 
 		public void ResendData(HttpListenerRequest request, HttpListenerResponse response, string uri)
