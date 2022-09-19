@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using System.Threading.Tasks;
 using Discovery.Listener;
 using Discovery.Router;
 using Discovery.Storage;
@@ -23,9 +24,7 @@ namespace Discovery
             var discoveryListener = new AsyncListener(prefexes1, discoveryRouter) as IAsyncListener;
             discoveryListener.Schedule();
             
-            Thread.Sleep(1000000);
-            
-            registratorListener.Stop();
+            Thread.Sleep(Timeout.InfiniteTimeSpan);          
         }
     }
 }
