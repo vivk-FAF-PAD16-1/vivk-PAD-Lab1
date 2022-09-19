@@ -39,6 +39,13 @@ namespace Gateway.Common
             output.Write(buffer, 0, buffer.Length);
             output.Close();
         }
+
+        public static void SendResponse(HttpListenerResponse response, int statusCode = 200)
+        {
+            response.ContentEncoding = Encoding.UTF8;
+            response.ContentLength64 = 0;
+            response.StatusCode = statusCode; 
+        }
         
         private const string NotFoundMessage = "OLEG NOT FOUND!";
         private const int NotFoundStatus = 404;
