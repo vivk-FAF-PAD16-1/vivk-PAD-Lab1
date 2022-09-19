@@ -266,9 +266,10 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Common\Data\RouteData.cs" />
+        <Compile Include="Common\Data\UriData.cs" />
         <Compile Include="Common\HttpUtilities.cs" />
         <Compile Include="Common\JsonUtilities.cs" />
-        <Compile Include="Common\RouteData.cs" />
         <Compile Include="Listener\AsyncListener.cs" />
         <Compile Include="Listener\IAsyncListener.cs" />
         <Compile Include="Program.cs" />

@@ -1,7 +1,7 @@
 ﻿using System.Net;
-using System.Text;
 using System.Text.Json;
 using Gateway.Common;
+using Gateway.Common.Data;
 using Gateway.Storage;
 
 namespace Gateway.Router
