@@ -10,41 +10,43 @@ namespace Gateway.Router
 	public class GatewayRouter : IRouter
 	{
 		private readonly string _discoveryUri;
+
+		private readonly HttpClient _httpClient;
+
+		private const string Get = "GET";
 		
         public GatewayRouter(string discoveryUri)
         {
 	        _discoveryUri = discoveryUri.TrimWeb();
+
+	        _httpClient = new HttpClient();
         }
         
 		public void Route(HttpListenerRequest request, HttpListenerResponse response)
 		{
+			var absolutePath = request.Url.AbsolutePath;
+			var discoveryFullUri = _discoveryUri + absolutePath;
 			
-		}
-
-		public void ResendData(HttpListenerRequest request, HttpListenerResponse response, string uri)
-		{
-			var requestContent = HttpUtilities.ReadRequestBody(request);
-
-			var client = new HttpClient();
-			var newRequest = new HttpRequestMessage(new HttpMethod(request.HttpMethod), uri);
-			newRequest.Content = new StringContent(requestContent, Encoding.UTF8, request.ContentType);
-			
-			//TODO: Send request from circuit breaker
-
-			var newResponse = client.SendAsync(newRequest)
+			var discoveryRequest = new HttpRequestMessage(new HttpMethod(Get), discoveryFullUri);
+			var discoveryResponse = _httpClient.SendAsync(discoveryRequest)
 				.GetAwaiter()
 				.GetResult();
-			var body = HttpUtilities.ReadResponseBody(newResponse);
-			
-            var buffer = Encoding.UTF8.GetBytes(body);
-            
-            response.ContentEncoding = Encoding.UTF8;
-            response.ContentLength64 = buffer.Length;
-            response.StatusCode = (int)newResponse.StatusCode;
-            
-            var output = response.OutputStream;
-            output.Write(buffer, 0, buffer.Length);
-            output.Close();
+			var discoveryContent = HttpUtilities.ReadResponseBody(discoveryResponse);
+
+			var uriData = JsonSerializer.Deserialize<UriData>(discoveryContent,
+				new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+			var content = HttpUtilities.ReadRequestBody(request);
+
+			var serviceRequest = new HttpRequestMessage(new HttpMethod(request.HttpMethod), uriData.Uri);
+			serviceRequest.Content = new StringContent(content, Encoding.UTF8, request.ContentType);
+
+			var serviceResponse = _httpClient.SendAsync(serviceRequest)
+				.GetAwaiter()
+				.GetResult();
+			var serviceContent = HttpUtilities.ReadResponseBody(serviceResponse);
+
+			HttpUtilities.SendResponseMessage(response, serviceContent, (int)serviceResponse.StatusCode);
 		}
 	}
 }
