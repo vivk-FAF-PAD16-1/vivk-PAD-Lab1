@@ -1,4 +1,7 @@
-﻿using System.Threading;
+﻿using System;
+using System.IO;
+using System.Threading;
+using Gateway.Common;
 using Gateway.Listener;
 using Gateway.Router;
 
@@ -6,14 +9,22 @@ namespace Gateway
 {
 	internal static class Program
 	{
+		private const string ConfigurationPath = "../../Resourses/configuration.json";
+		
 		public static void Main(string[] args)
 		{
-			const string discoveryUri = "http://localhost:40405/";
+			var directoryAbsolutePath = AppDomain.CurrentDomain.BaseDirectory;
+			var configurationAbsolutePath = Path.Combine(
+				directoryAbsolutePath, ConfigurationPath);
 			
-			var gatewayRouter = new GatewayRouter(discoveryUri);
+			var configurator = new Configurator(configurationAbsolutePath);
+			var configurationData = configurator.Load();
 			
-			var prefixes0 = new[] { "http://localhost:40300/" };
-			var gatewayListener = new AsyncListener(prefixes0, gatewayRouter) as IAsyncListener;
+			var gatewayRouter = new GatewayRouter(configurationData.DiscoveryUri);
+			
+			var gatewayListener = new AsyncListener(
+				configurationData.GatewayPrefixes, 
+				gatewayRouter) as IAsyncListener;
 			gatewayListener.Schedule();
 
 			Thread.Sleep(Timeout.InfiniteTimeSpan);

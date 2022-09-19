@@ -69,6 +69,8 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Common\Configurator.cs" />
+        <Compile Include="Common\Data\ConfigurationData.cs" />
         <Compile Include="Common\Data\RouteData.cs" />
         <Compile Include="Common\Data\UriData.cs" />
         <Compile Include="Common\HttpUtilities.cs" />
@@ -83,6 +85,9 @@
     <ItemGroup>
       <None Include="App.config" />
       <None Include="packages.config" />
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="Resourses\configuration.json" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
