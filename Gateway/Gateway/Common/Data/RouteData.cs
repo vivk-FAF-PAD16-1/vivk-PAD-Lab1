@@ -1,4 +1,4 @@
-﻿namespace Discovery.Common.Data
+﻿namespace Gateway.Common.Data
 {
     public struct RouteData
     {

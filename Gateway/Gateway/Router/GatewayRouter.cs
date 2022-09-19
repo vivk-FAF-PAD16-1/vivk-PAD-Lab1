@@ -2,43 +2,23 @@
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using Discovery.Common;
-using Discovery.Common.Data;
-using Discovery.Storage;
+using Gateway.Common;
+using Gateway.Common.Data;
 
-namespace Discovery.Router
+namespace Gateway.Router
 {
-	public class DiscoveryRouter : IRouter
+	public class GatewayRouter : IRouter
 	{
-		private const string Get = "GET";
+		private readonly string _discoveryUri;
 		
-		private readonly IStorage _storage;
-		
-        public DiscoveryRouter(IStorage storage)
+        public GatewayRouter(string discoveryUri)
         {
-            _storage = storage;
+	        _discoveryUri = discoveryUri.TrimWeb();
         }
         
 		public void Route(HttpListenerRequest request, HttpListenerResponse response)
 		{
-			if (request.HttpMethod != Get)
-            {
-                HttpUtilities.NotFoundResponse(response);
-                return;
-            }
 			
-			var endpoint = request.Url.AbsolutePath.TrimWeb();
-			var (ok, uri) = _storage.TryGet(endpoint);
-			if (ok == false)
-			{
-				HttpUtilities.NotFoundResponse(response);
-				return;
-			}
-			
-			var uriData = new UriData(uri);
-			var jsonData = JsonSerializer.Serialize(uriData);
-			
-			HttpUtilities.SendResponseMessage(response, jsonData);
 		}
 
 		public void ResendData(HttpListenerRequest request, HttpListenerResponse response, string uri)

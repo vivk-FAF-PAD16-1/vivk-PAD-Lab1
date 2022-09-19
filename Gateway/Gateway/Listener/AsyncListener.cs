@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Net;
-using Discovery.Router;
+using Gateway.Router;
 
-namespace Discovery.Listener
+namespace Gateway.Listener
 {
     public class AsyncListener : IAsyncListener
     {

@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Discovery.Router
+namespace Gateway.Router
 {
     public interface IRouter
     {

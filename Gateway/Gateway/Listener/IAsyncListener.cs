@@ -1,4 +1,4 @@
-﻿namespace Discovery.Listener
+﻿namespace Gateway.Listener
 {
     public interface IAsyncListener
     {

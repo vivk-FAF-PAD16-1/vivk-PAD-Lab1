@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Discovery.Common
+namespace Gateway.Common
 {
     public static class JsonUtilities
     {
