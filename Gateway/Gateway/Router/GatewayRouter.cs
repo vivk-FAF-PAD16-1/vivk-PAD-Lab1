@@ -43,6 +43,8 @@ namespace Gateway.Router
 			var serviceContent = HttpUtilities.ReadResponseBody(serviceResponse);
 
 			HttpUtilities.SendResponseMessage(response, serviceContent, (int)serviceResponse.StatusCode);
+			
+			response.Close();
 		}
 	}
 }
