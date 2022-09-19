@@ -22,9 +22,10 @@ namespace Discovery.Storage
 
         public void Register(string endpoint, string destinationUri)
         {
+            var key = endpoint.TrimWeb();
+                
             lock (_locker)
             {
-                var key = endpoint.TrimWeb();
                 var contains = _storage.ContainsKey(key);
                 DestinationContainer destinationContainer = null;
                 
@@ -44,15 +45,17 @@ namespace Discovery.Storage
         
         public void Unregister(string endpoint, string destinationUri)
         {
+            var key = endpoint.TrimWeb();
+            
             lock (_locker)
             {
-                var contains = _storage.ContainsKey(endpoint);
+                var contains = _storage.ContainsKey(key);
                 if (contains == false)
                 {
                     return;
                 }
                 
-                var destinationContainer = _storage[endpoint];
+                var destinationContainer = _storage[key];
                 destinationContainer.Remove(destinationUri);
             }
         }
