@@ -22,15 +22,13 @@ namespace Gateway.Router
 	        _httpClient = new HttpClient();
         }
         
-		public void Route(HttpListenerRequest request, HttpListenerResponse response)
+		public async void Route(HttpListenerRequest request, HttpListenerResponse response)
 		{
 			var absolutePath = request.Url.AbsolutePath;
 			var discoveryFullUri = _discoveryUri + absolutePath;
 			
 			var discoveryRequest = new HttpRequestMessage(new HttpMethod(Get), discoveryFullUri);
-			var discoveryResponse = _httpClient.SendAsync(discoveryRequest)
-				.GetAwaiter()
-				.GetResult();
+			var discoveryResponse = await _httpClient.SendAsync(discoveryRequest);
 			var discoveryContent = HttpUtilities.ReadResponseBody(discoveryResponse);
 
 			var uriData = JsonSerializer.Deserialize<UriData>(discoveryContent,
@@ -41,9 +39,7 @@ namespace Gateway.Router
 			var serviceRequest = new HttpRequestMessage(new HttpMethod(request.HttpMethod), uriData.Uri);
 			serviceRequest.Content = new StringContent(content, Encoding.UTF8, request.ContentType);
 
-			var serviceResponse = _httpClient.SendAsync(serviceRequest)
-				.GetAwaiter()
-				.GetResult();
+			var serviceResponse = await _httpClient.SendAsync(serviceRequest);
 			var serviceContent = HttpUtilities.ReadResponseBody(serviceResponse);
 
 			HttpUtilities.SendResponseMessage(response, serviceContent, (int)serviceResponse.StatusCode);
