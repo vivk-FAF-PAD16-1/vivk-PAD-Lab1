@@ -1,30 +1,26 @@
 package main
 
 import (
+	"github.com/vivk-FAF-PAD16-1/vivk-PAD-Lab1/src/router"
+	"github.com/vivk-FAF-PAD16-1/vivk-PAD-Lab1/src/storage"
 	"log"
 	"net/http"
 )
 
-const PORT = ":40500"
-
-func indexRoute(w http.ResponseWriter, req *http.Request) {
-	log.Println(req.Host)
-
-	_, err := w.Write([]byte(req.Host))
-	if err != nil {
-		log.Panic(err)
-		return
-	}
-}
+const StorageLength = 32
+const Port = ":40500"
 
 func main() {
-	http.HandleFunc("/", indexRoute)
+	s := storage.New(StorageLength)
 
-	log.Println("Prepare server!")
+	r := router.New(&s)
 
-	err := http.ListenAndServe(PORT, nil)
+	http.HandleFunc("/", r.Route)
+
+	log.Println("SERVER prepared!")
+
+	err := http.ListenAndServe(Port, nil)
 	if err != nil {
 		log.Panic(err)
 	}
-
 }
