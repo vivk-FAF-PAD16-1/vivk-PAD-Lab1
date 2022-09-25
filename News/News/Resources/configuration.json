@@ -3,5 +3,7 @@
 	"NewsPrefixes": [
 		"http://localhost:40800/",
 		"http://127.0.0.1:40800/"
-	]
+	],
+	
+	"MaxCount": 6
 }
