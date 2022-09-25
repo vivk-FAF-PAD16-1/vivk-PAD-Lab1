@@ -1,12 +1,14 @@
 ﻿using System.Net;
 using News.Common;
+using News.Counter;
 using News.Endpoints;
 
 namespace News.Router
 {
     public class NewsRouter : IRouter
     {
-        private NewsEndpoints _endpoints;
+        private readonly NewsEndpoints _endpoints;
+        private readonly ICounter _counter;
 
         private enum Router
         {
@@ -14,9 +16,10 @@ namespace News.Router
             Id = 2,
         }
         
-        public NewsRouter()
+        public NewsRouter(ICounter counter)
         {
             _endpoints = new NewsEndpoints();
+            _counter = counter;
         }
         
         public void Route(HttpListenerRequest request, HttpListenerResponse response)
@@ -26,6 +29,17 @@ namespace News.Router
 
             const int defaultIndex = (int)Router.Default;
             const int idIndex = (int)Router.Id;
+
+            var isFull = _counter.IsFull();
+            if (isFull)
+            {
+                HttpUtilities.TooManyRequestsResponse(response);
+                
+                response.Close();
+                return;
+            }
+            
+            _counter.Register();
             
             switch (segmentsCount)
             {
@@ -40,6 +54,8 @@ namespace News.Router
                     HttpUtilities.NotFoundResponse(response);
                     break;
             }
+            
+            _counter.Unregister();
             
             response.Close();
         }

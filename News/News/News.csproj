@@ -95,6 +95,8 @@
         <Compile Include="Common\Data\RouteData.cs" />
         <Compile Include="Common\HttpUtilities.cs" />
         <Compile Include="Common\JsonUtilities.cs" />
+        <Compile Include="Counter\SyncCounter.cs" />
+        <Compile Include="Counter\ICounter.cs" />
         <Compile Include="Endpoints\NewsEndpoints.cs" />
         <Compile Include="Listener\AsyncListener.cs" />
         <Compile Include="Listener\IAsyncListener.cs" />

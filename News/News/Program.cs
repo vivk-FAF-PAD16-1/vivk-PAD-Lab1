@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using News.Common;
+using News.Counter;
 using News.Listener;
 using News.Router;
 
@@ -20,7 +21,9 @@ namespace News
 			var configurator = new Configurator(configurationAbsolutePath);
 			var configurationData = configurator.Load();
 
-			var newsRouter = new NewsRouter() as IRouter;
+			var counter = new SyncCounter(configurationData.MaxCount) as ICounter;
+
+			var newsRouter = new NewsRouter(counter) as IRouter;
 
 			var newsListener = new AsyncListener(
 				configurationData.NewsPrefixes,
