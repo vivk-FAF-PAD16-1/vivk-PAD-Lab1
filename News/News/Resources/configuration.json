@@ -1,0 +1,7 @@
+﻿{
+	"DiscoveryUri": "http://localhost:40405/",
+	"NewsPrefixes": [
+		"http://localhost:40800/",
+		"http://127.0.0.1:40800/"
+	]
+}

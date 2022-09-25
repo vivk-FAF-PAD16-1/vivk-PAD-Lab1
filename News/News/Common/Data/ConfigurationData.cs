@@ -2,7 +2,7 @@
 {
     public struct ConfigurationData
     {
-        public string[] DiscoveryPrefixes { get; set; }
-        public string[] RegistratorPrefixes { get; set; }
+        public string DiscoveryUri { get; set; }
+        public string[] NewsPrefixes { get; set; }
     }
 }
