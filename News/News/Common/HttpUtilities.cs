@@ -55,6 +55,22 @@ namespace News.Common
             output.Write(buffer, 0, buffer.Length);
             output.Close();
         }
+        
+        private const string TooManyRequestsMessage = "429 Too Many Requests";
+        private const int TooManyRequestsStatus = 429;
+        
+        public static void TooManyRequestsResponse(HttpListenerResponse response)
+        {
+            var buffer = Encoding.UTF8.GetBytes(TooManyRequestsMessage);
+            
+            response.ContentEncoding = Encoding.UTF8;
+            response.ContentLength64 = buffer.Length;
+            response.StatusCode = TooManyRequestsStatus;
+            
+            var output = response.OutputStream;
+            output.Write(buffer, 0, buffer.Length);
+            output.Close();
+        }
 
         private static readonly char[] WebCharacters = { '/', '\\' };
 
