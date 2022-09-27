@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using News.Common;
 using News.Counter;
+using News.Discovery;
 using News.Listener;
 using News.Router;
 
@@ -12,7 +14,7 @@ namespace News
 	{
 		private const string ConfigurationPath = "../../Resources/configuration.json";		
 		
-		public static void Main(string[] args)
+		public static async Task Main(string[] args)
 		{
 			var directoryAbsolutePath = AppDomain.CurrentDomain.BaseDirectory;
 			var configurationAbsolutePath = Path.Combine(
@@ -29,6 +31,17 @@ namespace News
 				configurationData.NewsPrefixes,
 				newsRouter);
 			newsListener.Schedule();
+
+			var registrator = new Registrator(
+				configurationData.DiscoveryUri, 
+				configurationData.Routes) as IRegistrator;
+			
+			var ok = await registrator.Register();
+			if (!ok)
+			{
+				newsListener.Stop();
+				return;
+			}
 
 			Thread.Sleep(Timeout.InfiniteTimeSpan);
 		}

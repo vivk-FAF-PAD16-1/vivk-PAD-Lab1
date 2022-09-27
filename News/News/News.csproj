@@ -97,6 +97,8 @@
         <Compile Include="Common\JsonUtilities.cs" />
         <Compile Include="Counter\SyncCounter.cs" />
         <Compile Include="Counter\ICounter.cs" />
+        <Compile Include="Discovery\IRegistrator.cs" />
+        <Compile Include="Discovery\Registrator.cs" />
         <Compile Include="Endpoints\NewsEndpoints.cs" />
         <Compile Include="Listener\AsyncListener.cs" />
         <Compile Include="Listener\IAsyncListener.cs" />
