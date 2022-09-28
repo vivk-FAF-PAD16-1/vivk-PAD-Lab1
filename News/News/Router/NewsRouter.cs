@@ -22,7 +22,7 @@ namespace News.Router
             _counter = counter;
         }
         
-        public void Route(HttpListenerRequest request, HttpListenerResponse response)
+        public async void Route(HttpListenerRequest request, HttpListenerResponse response)
         {
             var segments = request.Url.Segments;
             var segmentsCount = segments.Length;
@@ -44,7 +44,7 @@ namespace News.Router
             switch (segmentsCount)
             {
                 case defaultIndex:
-                    _endpoints.RouteAll(request, response);
+                    await _endpoints.RouteAll(request, response);
                     break;
                 case idIndex:
                     var id = segments[idIndex - 1].TrimWeb();
