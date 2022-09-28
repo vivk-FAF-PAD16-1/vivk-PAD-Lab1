@@ -72,6 +72,22 @@ namespace News.Common
             output.Close();
         }
 
+        private const string BadRequestMessage = "400 Bad Request";
+        private const int BadRequestStatusCode = 400;
+        
+        public static void BadRequestResponse(HttpListenerResponse response)
+        {
+            var buffer = Encoding.UTF8.GetBytes(BadRequestMessage);
+            
+            response.ContentEncoding = Encoding.UTF8;
+            response.ContentLength64 = buffer.Length;
+            response.StatusCode = BadRequestStatusCode;
+            
+            var output = response.OutputStream;
+            output.Write(buffer, 0, buffer.Length);
+            output.Close();
+        }
+
         private static readonly char[] WebCharacters = { '/', '\\' };
 
         public static string TrimWeb(this string source)
