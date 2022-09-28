@@ -68,8 +68,6 @@ namespace News.Listener
             var response = context.Response;
 
             _router.Route(request, response);
-
-            response.Close();
         }
     }
 }
