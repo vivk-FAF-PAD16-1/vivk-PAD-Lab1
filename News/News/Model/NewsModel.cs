@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using MySqlConnector;
@@ -41,6 +42,34 @@ namespace News.Model
 			await command.ExecuteNonQueryAsync();
 			
 			await _connection.CloseAsync();
+		}
+
+		public async Task Get(int number, List<NewsData> dest)
+		{
+			await _connection.OpenAsync();
+			
+			var command = _connection.CreateCommand();
+
+			command.CommandText = "SELECT * FROM News " +
+			                      "ORDER BY Date DESC " +
+			                      "LIMIT @number";
+			command.Parameters.AddWithValue("@number", number);
+			
+			var reader = await command.ExecuteReaderAsync();
+			while (reader.Read())
+			{
+				var data = new NewsData
+				{
+					Id = (int)reader["Id"],
+					Title = (string)reader["Title"],
+					Description = (string)reader["Description"],
+					Content = (string)reader["Content"],
+				};
+				
+				dest.Add(data);
+			}
+			
+			await _connection.CloseAsync();	
 		}
 	}
 }
