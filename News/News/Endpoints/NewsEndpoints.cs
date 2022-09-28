@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using News.Common;
@@ -27,7 +28,15 @@ namespace News.Endpoints
             switch (method)
             {
                 case Get:
-                    // TODO: get all news
+                    const int number = 20;
+                    
+                    var dest = new List<NewsData>(capacity: number);
+                    await _model.Get(number, dest);
+
+                    var json = JsonSerializer.Serialize(dest,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    
+                    HttpUtilities.SendResponseMessage(response, json);
                     break;
                 case Post:
                     var body = HttpUtilities.ReadRequestBody(request);
