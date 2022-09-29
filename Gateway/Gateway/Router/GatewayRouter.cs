@@ -61,7 +61,12 @@ namespace Gateway.Router
 			var content = HttpUtilities.ReadRequestBody(request);
 
 			var serviceRequest = new HttpRequestMessage(new HttpMethod(request.HttpMethod), uriData.Uri);
-			serviceRequest.Content = new StringContent(content, Encoding.UTF8, request.ContentType);
+			
+			if (request.HttpMethod != Get && content != string.Empty)
+			{
+				serviceRequest.Content = new StringContent(content, Encoding.UTF8, request.ContentType);
+			}
+			
 			HttpResponseMessage serviceResponse;
 
 			try
