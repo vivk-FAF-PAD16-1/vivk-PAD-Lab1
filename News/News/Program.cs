@@ -32,7 +32,6 @@ namespace News
 				newsRouter);
 			newsListener.Schedule();
 
-			/*
 			var registrator = new Registrator(
 				configurationData.DiscoveryUri, 
 				configurationData.Routes) as IRegistrator;
@@ -43,7 +42,6 @@ namespace News
 				newsListener.Stop();
 				return;
 			}
-			*/
 
 			Thread.Sleep(Timeout.InfiniteTimeSpan);
 		}
