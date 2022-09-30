@@ -102,5 +102,36 @@ namespace News.Model
 
 			return (data, isFound);
 		}
+		
+		public async Task<bool> Update(NewsData data)
+		{
+			await _connection.OpenAsync();
+
+			var command = _connection.CreateCommand();
+
+			command.CommandText = "UPDATE News " +
+			                      "SET Title=@title,Description=@desc,Content=@content,Date=@date " +
+			                      "WHERE Id=@id";
+			command.Parameters.AddWithValue("@id", data.Id);
+			command.Parameters.AddWithValue("@title", data.Title);
+			command.Parameters.AddWithValue("@desc", data.Description);
+			command.Parameters.AddWithValue("@content", data.Content);
+			command.Parameters.AddWithValue("@date", DateTime.Now);
+
+			var ok = true;
+			
+			try
+			{
+				await command.ExecuteNonQueryAsync();
+			}
+			catch (Exception e)
+			{
+				ok = false;
+			}
+			
+			await _connection.CloseAsync();	
+
+			return ok;
+		}
 	}
 }
