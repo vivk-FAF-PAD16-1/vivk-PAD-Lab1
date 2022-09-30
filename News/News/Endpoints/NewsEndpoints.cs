@@ -65,20 +65,38 @@ namespace News.Endpoints
             switch (method)
             {
                 case Get:
-                    var (data, isFound) = await _model.Get(id);
+                    var (dataGet, isFound) = await _model.Get(id);
                     if (!isFound)
                     {
                         HttpUtilities.NotFoundResponse(response);
                         break;
                     }
                     
-                    var json = JsonSerializer.Serialize(data,
+                    var json = JsonSerializer.Serialize(dataGet,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     
                     HttpUtilities.SendResponseMessage(response, json);
                     break;
                 case Put:
-                    // TODO: update news item by id
+                    var body = HttpUtilities.ReadRequestBody(request);
+                    var isValid = JsonUtilities.IsValid(body);
+                    if (!isValid)
+                    {
+                        HttpUtilities.BadRequestResponse(response);
+                        break;
+                    }
+
+                    var dataPut = JsonSerializer.Deserialize<NewsData>(body,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    dataPut.Id = id;
+                    
+                    var ok = await _model.Update(dataPut);
+                    if (!ok)
+                    {
+                        HttpUtilities.NotFoundResponse(response);
+                        break;
+                    }
                     break;
                 default:
                     HttpUtilities.NotFoundResponse(response);
