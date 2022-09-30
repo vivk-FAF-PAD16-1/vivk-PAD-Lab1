@@ -58,14 +58,24 @@ namespace News.Endpoints
             }
         }
 
-        public void RouteById(HttpListenerRequest request, HttpListenerResponse response, string id)
+        public async Task RouteById(HttpListenerRequest request, HttpListenerResponse response, int id)
         {
             var method = request.HttpMethod;
 
             switch (method)
             {
                 case Get:
-                    // TODO: get news item by id
+                    var (data, isFound) = await _model.Get(id);
+                    if (!isFound)
+                    {
+                        HttpUtilities.NotFoundResponse(response);
+                        break;
+                    }
+                    
+                    var json = JsonSerializer.Serialize(data,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    
+                    HttpUtilities.SendResponseMessage(response, json);
                     break;
                 case Put:
                     // TODO: update news item by id

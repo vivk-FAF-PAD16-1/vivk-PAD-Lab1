@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using News.Common;
 using News.Counter;
 using News.Endpoints;
@@ -47,8 +48,17 @@ namespace News.Router
                     await _endpoints.RouteAll(request, response);
                     break;
                 case idIndex:
-                    var id = segments[idIndex - 1].TrimWeb();
-                    _endpoints.RouteById(request, response, id);
+                    int id;
+                    try
+                    {
+                        id = Convert.ToInt32(segments[idIndex - 1].TrimWeb());
+                    }
+                    catch (Exception e)
+                    {
+                        HttpUtilities.NotFoundResponse(response);
+                        break;
+                    }
+                    await _endpoints.RouteById(request, response, id);
                     break;
                 default:
                     HttpUtilities.NotFoundResponse(response);
