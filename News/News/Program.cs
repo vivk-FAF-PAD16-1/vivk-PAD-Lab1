@@ -12,8 +12,10 @@ namespace News
 {
 	internal static class Program
 	{
-		private const string ConfigurationPath = "../../Resources/configuration.json";		
+		public const bool Independent = true;
 		
+		private const string ConfigurationPath = "../../Resources/configuration.json";
+
 		public static async Task Main(string[] args)
 		{
 			var directoryAbsolutePath = AppDomain.CurrentDomain.BaseDirectory;
@@ -32,15 +34,18 @@ namespace News
 				newsRouter);
 			newsListener.Schedule();
 
-			var registrator = new Registrator(
-				configurationData.DiscoveryUri, 
-				configurationData.Routes) as IRegistrator;
-			
-			var ok = await registrator.Register();
-			if (!ok)
+			if (!Independent)
 			{
-				newsListener.Stop();
-				return;
+				var registrator = new Registrator(
+					configurationData.DiscoveryUri, 
+					configurationData.Routes) as IRegistrator;
+			
+				var ok = await registrator.Register();
+				if (!ok)
+				{
+					newsListener.Stop();
+					return;
+				}
 			}
 
 			Thread.Sleep(Timeout.InfiniteTimeSpan);
