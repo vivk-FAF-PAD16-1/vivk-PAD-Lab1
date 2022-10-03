@@ -16,9 +16,13 @@ namespace News.Endpoints
 
         private readonly NewsModel _model;
 
-        public NewsEndpoints()
+        public NewsEndpoints(ref ConfigurationData conf)
         {
-            _model = new NewsModel("localhost", 3306, "root", "root");
+            _model = new NewsModel(
+                conf.ServerDb,
+                conf.PortDb,
+                conf.UserDb,
+                conf.PassDb);
         }
         
         public async Task RouteAll(HttpListenerRequest request, HttpListenerResponse response)

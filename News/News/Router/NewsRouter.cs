@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using News.Common;
+using News.Common.Data;
 using News.Counter;
 using News.Endpoints;
 
@@ -17,9 +18,9 @@ namespace News.Router
             Id = 2,
         }
         
-        public NewsRouter(ICounter counter)
+        public NewsRouter(ref ConfigurationData conf, ICounter counter)
         {
-            _endpoints = new NewsEndpoints();
+            _endpoints = new NewsEndpoints(ref conf);
             _counter = counter;
         }
         
