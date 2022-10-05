@@ -60,7 +60,7 @@ namespace Auth.Endpoints
                 return;
             }
 
-            var (ok, isTimeout) = await HttpUtilities.Timeout(
+            var (error, isTimeout) = await HttpUtilities.Timeout(
                 _model.Get(authData), 
                 TimeoutMillisecondsDelay);
 
@@ -70,11 +70,11 @@ namespace Auth.Endpoints
                 return;
             }
             
-            if (!ok)
+            if (error != null)
             {
                 HttpUtilities.SendResponseMessage(
                     response, 
-                    $"User with Email=[{authData.Email}] not exist!", 
+                    error, 
                     DbErrorStatusCode);
                 return;
             }
@@ -114,7 +114,7 @@ namespace Auth.Endpoints
                 return;
             }
             
-            var (ok, isTimeout) = await HttpUtilities.Timeout(
+            var (error, isTimeout) = await HttpUtilities.Timeout(
                 _model.Create(authData), 
                 TimeoutMillisecondsDelay);
 
@@ -124,11 +124,11 @@ namespace Auth.Endpoints
                 return;
             }
             
-            if (!ok)
+            if (error != null)
             {
                 HttpUtilities.SendResponseMessage(
-                    response, 
-                    $"User with Email=[{authData.Email}] exist!", 
+                    response,
+                    error,
                     DbErrorStatusCode);
                 return;
             }

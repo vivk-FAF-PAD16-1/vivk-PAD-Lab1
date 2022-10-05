@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Auth.Common;
 using MongoDB.Driver;
 
@@ -23,7 +24,7 @@ namespace Auth.Model
 			*/
 		}
 
-		public async Task<bool> Create(AuthData data)
+		public async Task<string> Create(AuthData data)
 		{
 			var list = await _collection.Find(x => x.Email == data.Email)
 				.ToListAsync();
@@ -32,32 +33,37 @@ namespace Auth.Model
 			{
 				if (list.Count != 0)
 				{
-					return false;
+					return $"User with Email=[{data.Email}] not exist!";
 				}
 			}
 
 			await _collection.InsertOneAsync(data);
 
-			return true;
+			return null;
 		}
 		
-		public async Task<bool> Get(AuthData data)
+		public async Task<string> Get(AuthData data)
 		{
-			var list = await _collection.Find(x => x.Email == data.Email && 
-			                                       x.Pass == data.Pass)
+			var list = await _collection.Find(x => x.Email == data.Email)
 				.ToListAsync();
 
 			if (list == null)
 			{
-				return false;
+				return $"User with Email=[{data.Email}] not exist!";
 			}
 
 			if (list.Count == 0)
 			{
-				return false;
+				return $"User with Email=[{data.Email}] not exist!";
 			}
 
-			return true;
+			var user = list.First();
+			if (user.Pass != data.Pass)
+			{
+				return $"User with Email=[{data.Email}] have another password!";
+			}
+
+			return null;
 		}
 	}
 }
