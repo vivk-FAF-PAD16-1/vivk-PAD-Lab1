@@ -14,6 +14,8 @@ namespace News.Endpoints
         private const string Post = "POST";
         private const string Put = "PUT";
 
+        private const int TimeoutMillisecondsDelay = 1000;
+
         private readonly NewsModel _model;
 
         public NewsEndpoints(ref ConfigurationData conf)
@@ -28,15 +30,24 @@ namespace News.Endpoints
         public async Task RouteAll(HttpListenerRequest request, HttpListenerResponse response)
         {
             var method = request.HttpMethod;
+            var isTimeout = false;
 
             switch (method)
             {
+                
                 case Get:
                     const int number = 20;
                     
                     var dest = new List<NewsData>(capacity: number);
-                    await _model.Get(number, dest);
+                    isTimeout = await HttpUtilities
+                        .Timeout(_model.Get(number, dest), TimeoutMillisecondsDelay);
 
+                    if (isTimeout)
+                    {
+                        HttpUtilities.RequestTimeoutResponse(response);
+                        break;
+                    }
+                    
                     var json = JsonSerializer.Serialize(dest,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     
@@ -54,7 +65,15 @@ namespace News.Endpoints
                     var data = JsonSerializer.Deserialize<NewsData>(body,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                    await _model.Create(data);
+                    isTimeout = await HttpUtilities
+                        .Timeout(_model.Create(data), TimeoutMillisecondsDelay);
+
+                    if (isTimeout)
+                    {
+                        HttpUtilities.RequestTimeoutResponse(response);
+                        break;
+                    }
+                    
                     break;
                 default:
                     HttpUtilities.NotFoundResponse(response);
@@ -69,7 +88,15 @@ namespace News.Endpoints
             switch (method)
             {
                 case Get:
-                    var (dataGet, isFound) = await _model.Get(id);
+                    var (result0, isTimeout0) = await HttpUtilities
+                        .Timeout(_model.Get(id), TimeoutMillisecondsDelay);
+                    if (isTimeout0)
+                    {
+                        HttpUtilities.RequestTimeoutResponse(response);
+                        break;
+                    }
+                    
+                    var (dataGet, isFound) = result0;
                     if (!isFound)
                     {
                         HttpUtilities.NotFoundResponse(response);
@@ -95,8 +122,15 @@ namespace News.Endpoints
 
                     dataPut.Id = id;
                     
-                    var ok = await _model.Update(dataPut);
-                    if (!ok)
+                    var (resultPut, isTimeoutPut) = await HttpUtilities
+                        .Timeout(_model.Update(dataPut), TimeoutMillisecondsDelay);
+                    if (isTimeoutPut)
+                    {
+                        HttpUtilities.RequestTimeoutResponse(response);
+                        break;
+                    }
+                    
+                    if (!resultPut)
                     {
                         HttpUtilities.NotFoundResponse(response);
                         break;
