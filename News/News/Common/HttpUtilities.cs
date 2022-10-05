@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace News.Common
 {
@@ -87,6 +88,22 @@ namespace News.Common
             output.Write(buffer, 0, buffer.Length);
             output.Close();
         }
+        
+        private const string RequestTimeoutMessage = "408 Request Timeout";
+        private const int RequestTimeoutStatusCode = 408;
+        
+        public static void RequestTimeoutResponse(HttpListenerResponse response)
+        {
+            var buffer = Encoding.UTF8.GetBytes(RequestTimeoutMessage);
+            
+            response.ContentEncoding = Encoding.UTF8;
+            response.ContentLength64 = buffer.Length;
+            response.StatusCode = RequestTimeoutStatusCode;
+            
+            var output = response.OutputStream;
+            output.Write(buffer, 0, buffer.Length);
+            output.Close();
+        }
 
         private static readonly char[] WebCharacters = { '/', '\\' };
 
@@ -121,6 +138,28 @@ namespace News.Common
             }
 
             return true;
+        }
+        
+        public static async Task<(TResult, bool)> Timeout<TResult>(
+            Task<TResult> task, 
+            int millisecondsDelay) 
+        {
+            var waitDelay = Task.Delay(millisecondsDelay);
+            await Task.WhenAny(waitDelay, task);
+
+            return task.IsCompleted 
+                ? (task.Result, false) 
+                : (default, true);
+        }
+
+        public static async Task<bool> Timeout(
+            Task task,
+            int millisecondsDelay)
+        {
+            var waitDelay = Task.Delay(millisecondsDelay);
+            await Task.WhenAny(waitDelay, task);
+
+            return !task.IsCompleted;
         }
     }
 }
