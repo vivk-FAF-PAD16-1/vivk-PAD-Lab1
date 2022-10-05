@@ -9,5 +9,7 @@
         public int MaxCount { get; set; }
         
         public string ConnectionDb { get; set; }
+        
+        public bool Independent { get; set; }
     }
 }

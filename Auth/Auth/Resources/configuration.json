@@ -14,5 +14,7 @@
 	
 	"MaxCount": 6,
 	
-	"ConnectionDB": "mongodb://localhost:27017"
+	"ConnectionDB": "mongodb://localhost:27017",
+	
+	"Independent": true
 }
