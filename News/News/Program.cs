@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using News.Common;
 using News.Counter;
 using News.Discovery;
-using News.Endpoints;
 using News.Listener;
 using News.Router;
 
@@ -28,11 +27,11 @@ namespace News
 
 			var counter = new SyncCounter(configurationData.MaxCount) as ICounter;
 
-			var newsRouter = new NewsRouter(ref configurationData, counter) as IRouter;
+			var authRouter = new AuthRouter(ref configurationData, counter) as IRouter;
 
 			var newsListener = new AsyncListener(
 				configurationData.NewsPrefixes,
-				newsRouter);
+				authRouter);
 			newsListener.Schedule();
 
 			if (!Independent)
