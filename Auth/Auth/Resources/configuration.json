@@ -1,0 +1,18 @@
+﻿{
+	"DiscoveryUri": "http://localhost:40404/",
+	"AuthPrefixes": [
+		"http://localhost:40900/",
+		"http://127.0.0.1:40900/"
+	],
+	
+	"Routes": [
+		{
+			"Endpoint": "/auth",
+			"DestinationUri": "http://localhost:40900/"
+		}
+	],
+	
+	"MaxCount": 6,
+	
+	"ConnectionDB": "mongodb://localhost:27017"
+}
