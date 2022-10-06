@@ -13,6 +13,8 @@ namespace Auth.Endpoints
 
         private const string DatabaseName = "Auth";
         private const string CollectionName = "Users";
+
+        private const string Secret = "letmein";
         
         private const int DbErrorStatusCode = 403;
 
@@ -79,7 +81,8 @@ namespace Auth.Endpoints
                 return;
             }
 
-            // TODO: Create JWT and add in cookie
+            var jwtToken = JwtUtilities.Generate(authData.Email, Secret);
+            HttpUtilities.SendResponseMessage(response, jwtToken);
         }
         
         public async Task RouteRegister(HttpListenerRequest request, HttpListenerResponse response)
@@ -133,7 +136,8 @@ namespace Auth.Endpoints
                 return;
             }
             
-            // TODO: Create JWT and add in cookie
+            var jwtToken = JwtUtilities.Generate(authData.Email, Secret);
+            HttpUtilities.SendResponseMessage(response, jwtToken);
         }
     }	
 }
