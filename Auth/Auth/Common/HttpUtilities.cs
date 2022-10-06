@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace News.Common
+namespace Auth.Common
 {
     public static class HttpUtilities
     {

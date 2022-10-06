@@ -14,25 +14,40 @@ namespace News.Endpoints
         private const string Post = "POST";
         private const string Put = "PUT";
 
+        private const int TimeoutMillisecondsDelay = 1000;
+
         private readonly NewsModel _model;
 
-        public NewsEndpoints()
+        public NewsEndpoints(ref ConfigurationData conf)
         {
-            _model = new NewsModel("localhost", 3306, "root", "root");
+            _model = new NewsModel(
+                conf.ServerDb,
+                conf.PortDb,
+                conf.UserDb,
+                conf.PassDb);
         }
         
         public async Task RouteAll(HttpListenerRequest request, HttpListenerResponse response)
         {
             var method = request.HttpMethod;
+            var isTimeout = false;
 
             switch (method)
             {
+                
                 case Get:
                     const int number = 20;
                     
                     var dest = new List<NewsData>(capacity: number);
-                    await _model.Get(number, dest);
+                    isTimeout = await HttpUtilities
+                        .Timeout(_model.Get(number, dest), TimeoutMillisecondsDelay);
 
+                    if (isTimeout)
+                    {
+                        HttpUtilities.RequestTimeoutResponse(response);
+                        break;
+                    }
+                    
                     var json = JsonSerializer.Serialize(dest,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     
@@ -50,7 +65,15 @@ namespace News.Endpoints
                     var data = JsonSerializer.Deserialize<NewsData>(body,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                    await _model.Create(data);
+                    isTimeout = await HttpUtilities
+                        .Timeout(_model.Create(data), TimeoutMillisecondsDelay);
+
+                    if (isTimeout)
+                    {
+                        HttpUtilities.RequestTimeoutResponse(response);
+                        break;
+                    }
+                    
                     break;
                 default:
                     HttpUtilities.NotFoundResponse(response);
@@ -58,17 +81,60 @@ namespace News.Endpoints
             }
         }
 
-        public void RouteById(HttpListenerRequest request, HttpListenerResponse response, string id)
+        public async Task RouteById(HttpListenerRequest request, HttpListenerResponse response, int id)
         {
             var method = request.HttpMethod;
 
             switch (method)
             {
                 case Get:
-                    // TODO: get news item by id
+                    var (result0, isTimeout0) = await HttpUtilities
+                        .Timeout(_model.Get(id), TimeoutMillisecondsDelay);
+                    if (isTimeout0)
+                    {
+                        HttpUtilities.RequestTimeoutResponse(response);
+                        break;
+                    }
+                    
+                    var (dataGet, isFound) = result0;
+                    if (!isFound)
+                    {
+                        HttpUtilities.NotFoundResponse(response);
+                        break;
+                    }
+                    
+                    var json = JsonSerializer.Serialize(dataGet,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    
+                    HttpUtilities.SendResponseMessage(response, json);
                     break;
                 case Put:
-                    // TODO: update news item by id
+                    var body = HttpUtilities.ReadRequestBody(request);
+                    var isValid = JsonUtilities.IsValid(body);
+                    if (!isValid)
+                    {
+                        HttpUtilities.BadRequestResponse(response);
+                        break;
+                    }
+
+                    var dataPut = JsonSerializer.Deserialize<NewsData>(body,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    dataPut.Id = id;
+                    
+                    var (resultPut, isTimeoutPut) = await HttpUtilities
+                        .Timeout(_model.Update(dataPut), TimeoutMillisecondsDelay);
+                    if (isTimeoutPut)
+                    {
+                        HttpUtilities.RequestTimeoutResponse(response);
+                        break;
+                    }
+                    
+                    if (!resultPut)
+                    {
+                        HttpUtilities.NotFoundResponse(response);
+                        break;
+                    }
                     break;
                 default:
                     HttpUtilities.NotFoundResponse(response);

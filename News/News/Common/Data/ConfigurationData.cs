@@ -7,5 +7,10 @@
         public RouteData[] Routes { get; set; }
         
         public int MaxCount { get; set; }
+        
+        public string ServerDb { get; set; }
+        public int PortDb { get; set; }
+        public string UserDb { get; set; }
+        public string PassDb { get; set; }
     }
 }

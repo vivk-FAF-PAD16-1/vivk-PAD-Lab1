@@ -2,14 +2,13 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using News.Common;
-using News.Counter;
-using News.Discovery;
-using News.Endpoints;
-using News.Listener;
-using News.Router;
+using Auth.Common;
+using Auth.Counter;
+using Auth.Discovery;
+using Auth.Listener;
+using Auth.Router;
 
-namespace News
+namespace Auth
 {
 	internal static class Program
 	{
@@ -28,14 +27,14 @@ namespace News
 
 			var counter = new SyncCounter(configurationData.MaxCount) as ICounter;
 
-			var newsRouter = new NewsRouter(ref configurationData, counter) as IRouter;
+			var authRouter = new AuthRouter(ref configurationData, counter) as IRouter;
 
-			var newsListener = new AsyncListener(
-				configurationData.NewsPrefixes,
-				newsRouter);
-			newsListener.Schedule();
+			var authListener = new AsyncListener(
+				configurationData.AuthPrefixes,
+				authRouter);
+			authListener.Schedule();
 
-			if (!Independent)
+			if (!configurationData.Independent)
 			{
 				var registrator = new Registrator(
 					configurationData.DiscoveryUri, 
@@ -44,7 +43,7 @@ namespace News
 				var ok = await registrator.Register();
 				if (!ok)
 				{
-					newsListener.Stop();
+					authListener.Stop();
 					return;
 				}
 			}
