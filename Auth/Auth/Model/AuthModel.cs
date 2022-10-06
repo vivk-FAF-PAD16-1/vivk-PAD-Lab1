@@ -14,14 +14,6 @@ namespace Auth.Model
 			var client = new MongoClient(connection);
 			var database = client.GetDatabase(dbName);
 			_collection = database.GetCollection<AuthData>(collectionName);
-			
-			/*
-			collection.InsertOne(new AuthData
-			{
-				Email = "name@email.mail",
-				Pass = "Kek",
-			});
-			*/
 		}
 
 		public async Task<string> Create(AuthData data)
@@ -33,7 +25,7 @@ namespace Auth.Model
 			{
 				if (list.Count != 0)
 				{
-					return $"User with Email=[{data.Email}] not exist!";
+					return $"User with Email=[{data.Email}] exist!";
 				}
 			}
 
