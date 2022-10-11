@@ -35,7 +35,7 @@ namespace News
 				newsRouter);
 			newsListener.Schedule();
 
-			if (!Independent)
+			if (!configurationData.Independent)
 			{
 				var registrator = new Registrator(
 					configurationData.DiscoveryUri, 
