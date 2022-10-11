@@ -29,7 +29,7 @@ func (r Router) create(w http.ResponseWriter, req *http.Request, db string, mode
 		return
 	}
 
-	var data map[string]interface{}
+	var data []map[string]interface{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		httpUtilities.WriteInternalServerError(w)
