@@ -87,7 +87,7 @@ namespace Gateway.Router
 			}
 			else
 			{
-				HttpUtilities.SendResponse(response, serviceStatusCode);
+				response.StatusCode = serviceStatusCode;
 			}
 		}
 	}

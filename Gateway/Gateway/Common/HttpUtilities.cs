@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Gateway.Common
 {
@@ -39,13 +40,6 @@ namespace Gateway.Common
             output.Write(buffer, 0, buffer.Length);
             output.Close();
         }
-
-        public static void SendResponse(HttpListenerResponse response, int statusCode = 200)
-        {
-            response.ContentEncoding = Encoding.UTF8;
-            response.ContentLength64 = 0;
-            response.StatusCode = statusCode; 
-        }
         
         private const string NotFoundMessage = "OLEG NOT FOUND!";
         private const int NotFoundStatus = 404;
@@ -57,6 +51,54 @@ namespace Gateway.Common
             response.ContentEncoding = Encoding.UTF8;
             response.ContentLength64 = buffer.Length;
             response.StatusCode = NotFoundStatus;
+            
+            var output = response.OutputStream;
+            output.Write(buffer, 0, buffer.Length);
+            output.Close();
+        }
+        
+        private const string TooManyRequestsMessage = "429 Too Many Requests";
+        private const int TooManyRequestsStatus = 429;
+        
+        public static void TooManyRequestsResponse(HttpListenerResponse response)
+        {
+            var buffer = Encoding.UTF8.GetBytes(TooManyRequestsMessage);
+            
+            response.ContentEncoding = Encoding.UTF8;
+            response.ContentLength64 = buffer.Length;
+            response.StatusCode = TooManyRequestsStatus;
+            
+            var output = response.OutputStream;
+            output.Write(buffer, 0, buffer.Length);
+            output.Close();
+        }
+
+        private const string BadRequestMessage = "400 Bad Request";
+        private const int BadRequestStatusCode = 400;
+        
+        public static void BadRequestResponse(HttpListenerResponse response)
+        {
+            var buffer = Encoding.UTF8.GetBytes(BadRequestMessage);
+            
+            response.ContentEncoding = Encoding.UTF8;
+            response.ContentLength64 = buffer.Length;
+            response.StatusCode = BadRequestStatusCode;
+            
+            var output = response.OutputStream;
+            output.Write(buffer, 0, buffer.Length);
+            output.Close();
+        }
+        
+        private const string RequestTimeoutMessage = "408 Request Timeout";
+        private const int RequestTimeoutStatusCode = 408;
+        
+        public static void RequestTimeoutResponse(HttpListenerResponse response)
+        {
+            var buffer = Encoding.UTF8.GetBytes(RequestTimeoutMessage);
+            
+            response.ContentEncoding = Encoding.UTF8;
+            response.ContentLength64 = buffer.Length;
+            response.StatusCode = RequestTimeoutStatusCode;
             
             var output = response.OutputStream;
             output.Write(buffer, 0, buffer.Length);
@@ -96,6 +138,28 @@ namespace Gateway.Common
             }
 
             return true;
+        }
+        
+        public static async Task<(TResult, bool)> Timeout<TResult>(
+            Task<TResult> task, 
+            int millisecondsDelay) 
+        {
+            var waitDelay = Task.Delay(millisecondsDelay);
+            await Task.WhenAny(waitDelay, task);
+
+            return task.IsCompleted 
+                ? (task.Result, false) 
+                : (default, true);
+        }
+
+        public static async Task<bool> Timeout(
+            Task task,
+            int millisecondsDelay)
+        {
+            var waitDelay = Task.Delay(millisecondsDelay);
+            await Task.WhenAny(waitDelay, task);
+
+            return !task.IsCompleted;
         }
     }
 }
