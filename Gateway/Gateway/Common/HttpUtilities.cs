@@ -1,7 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -160,6 +162,31 @@ namespace Gateway.Common
             await Task.WhenAny(waitDelay, task);
 
             return !task.IsCompleted;
+        }
+        
+        public static bool Ping(string uri, int timeout = 1000)
+        {
+            var pingable = false;
+            var pinger = new Ping();
+
+            try
+            {
+                var reply = pinger.Send(uri, timeout);
+                if (reply != null)
+                {
+                    pingable = reply.Status == IPStatus.Success;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            finally
+            {
+                pinger.Dispose();
+            }
+
+            return pingable;
         }
     }
 }
