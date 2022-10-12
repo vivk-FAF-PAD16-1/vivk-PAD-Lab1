@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using News.Common;
@@ -14,9 +16,16 @@ namespace News.Endpoints
         private const string Post = "POST";
         private const string Put = "PUT";
 
+        private const string CacheDbName = "NewsDatabase";
+        private const string CacheModelName = "NewsData";
+
         private const int TimeoutMillisecondsDelay = 1000;
 
+        private readonly HttpClient _httpClient;
         private readonly NewsModel _model;
+
+        private readonly string _cacheUri;
+        private readonly bool _independent;
 
         public NewsEndpoints(ref ConfigurationData conf)
         {
@@ -25,6 +34,11 @@ namespace News.Endpoints
                 conf.PortDb,
                 conf.UserDb,
                 conf.PassDb);
+            
+	        _httpClient = new HttpClient();
+            var cacheUriDomain = conf.CacheUri.TrimWeb();
+            _cacheUri = $"{cacheUriDomain}/{CacheDbName}/{CacheModelName}";
+            _independent = conf.Independent;
         }
         
         public async Task RouteAll(HttpListenerRequest request, HttpListenerResponse response)
@@ -50,7 +64,14 @@ namespace News.Endpoints
                     
                     var json = JsonSerializer.Serialize(dest,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    
+
+                    if (!_independent)
+                    {
+                        var cacheRequest = new HttpRequestMessage(HttpMethod.Post, _cacheUri);
+                        cacheRequest.Content = new StringContent(json, Encoding.UTF8, request.ContentType);
+                        await _httpClient.SendAsync(cacheRequest);
+                    }
+
                     HttpUtilities.SendResponseMessage(response, json);
                     break;
                 case Post:
@@ -88,22 +109,54 @@ namespace News.Endpoints
             switch (method)
             {
                 case Get:
-                    var (result0, isTimeout0) = await HttpUtilities
-                        .Timeout(_model.Get(id), TimeoutMillisecondsDelay);
-                    if (isTimeout0)
+                    NewsData newsData = default;
+                    var hasAny = false;
+                    
+                    if (!_independent)
                     {
-                        HttpUtilities.RequestTimeoutResponse(response);
-                        break;
+                        var cacheRequest = new HttpRequestMessage(HttpMethod.Get, _cacheUri);
+                        var cacheResponse = await _httpClient.SendAsync(cacheRequest);
+                        
+                        var cacheContent = HttpUtilities.ReadResponseBody(cacheResponse);
+                        var data = JsonSerializer.Deserialize<NewsData[]>(cacheContent,
+                            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                        if (data != null)
+                        {
+                            for (var i = 0; i < data.Length; i++)
+                            {
+                                if (data[i].Id == id)
+                                {
+                                    newsData = data[i];
+                                    hasAny = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!hasAny)
+                    {
+                        var (result0, isTimeout0) = await HttpUtilities
+                            .Timeout(_model.Get(id), TimeoutMillisecondsDelay);
+                        if (isTimeout0)
+                        {
+                            HttpUtilities.RequestTimeoutResponse(response);
+                            break;
+                        }
+
+                        bool isFound;
+                        (newsData, isFound) = result0;
+                        if (!isFound)
+                        {
+                            HttpUtilities.NotFoundResponse(response);
+                            break;
+                        }
                     }
                     
-                    var (dataGet, isFound) = result0;
-                    if (!isFound)
-                    {
-                        HttpUtilities.NotFoundResponse(response);
-                        break;
-                    }
                     
-                    var json = JsonSerializer.Serialize(dataGet,
+                    
+                    var json = JsonSerializer.Serialize(newsData,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     
                     HttpUtilities.SendResponseMessage(response, json);

@@ -1,5 +1,6 @@
 ﻿{
 	"DiscoveryUri": "http://localhost:40404/",
+	"CacheUri" : "http://localhost:40500/",
 	"NewsPrefixes": [
 		"http://localhost:40800/",
 		"http://127.0.0.1:40800/"
@@ -17,5 +18,7 @@
 	"ServerDB": "localhost",
 	"PortDB": 3306,
 	"UserDB": "root",
-	"PassDB": "root"
+	"PassDB": "root",
+	
+	"Independent": true
 }
