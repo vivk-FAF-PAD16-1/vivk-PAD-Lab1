@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -11,6 +12,7 @@ namespace Discovery.Router
 	public class DiscoveryRouter : IRouter
 	{
 		private const string Get = "GET";
+		private const string Put = "PUT";
 		
 		private readonly IStorage _storage;
 		
@@ -21,24 +23,50 @@ namespace Discovery.Router
         
 		public void Route(HttpListenerRequest request, HttpListenerResponse response)
 		{
-			if (request.HttpMethod != Get)
+			if (request.HttpMethod == Get)
             {
-                HttpUtilities.NotFoundResponse(response);
-                return;
-            }
+	            var endpoint = request.Url.AbsolutePath.TrimWeb();
+	            var (ok, uri, param, endpoint0) = _storage.TryGet(endpoint);
+	            if (ok == false)
+	            {
+		            HttpUtilities.NotFoundResponse(response);
+		            return;
+	            }
 			
-			var endpoint = request.Url.AbsolutePath.TrimWeb();
-			var (ok, uri) = _storage.TryGet(endpoint);
-			if (ok == false)
+	            var uriData = new UriData(uri, param, endpoint0);
+	            var jsonData = JsonSerializer.Serialize(uriData);
+			
+	            HttpUtilities.SendResponseMessage(response, jsonData);
+            }
+			else if (request.HttpMethod == Put)
+			{
+				var content = HttpUtilities.ReadRequestBody(request);
+				UriData uriData;
+				try
+				{
+					uriData = JsonSerializer.Deserialize<UriData>(content,
+						new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+				}
+				catch (Exception)
+				{
+					response.StatusCode = 400;
+					return;
+				}
+
+				if (string.IsNullOrEmpty(uriData.Uri) ||
+				    string.IsNullOrEmpty(uriData.Endpoint))
+				{
+					response.StatusCode = 400;
+					return;
+				}
+				
+				_storage.TryMark(uriData.Uri, uriData.Endpoint);
+			}
+			else
 			{
 				HttpUtilities.NotFoundResponse(response);
 				return;
 			}
-			
-			var uriData = new UriData(uri);
-			var jsonData = JsonSerializer.Serialize(uriData);
-			
-			HttpUtilities.SendResponseMessage(response, jsonData);
 		}
 
 		public void ResendData(HttpListenerRequest request, HttpListenerResponse response, string uri)

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 using Discovery.Common;
 
 namespace Discovery.Storage
@@ -60,24 +61,39 @@ namespace Discovery.Storage
             }
         }
 
-        public (bool, string) TryGet(string endpoint)
+        public (bool, string, string, string) TryGet(string endpoint)
         {
             lock (_locker)
             {
                 var (ok0, key, param) = TrySplitKeyParams(endpoint);
                 if (ok0 == false)
                 {
-                    return (false, null);
+                    return (false, null, null, null);
                 }
 
                 var destinationContainer = _storage[key];
                 var (ok1, uri) = destinationContainer.TryGet();
                 if (ok1 == false)
                 {
-                    return (false, null);
+                    return (false, null, null, null);
                 }
 
-                return (true, uri + param);
+                return (true, uri, param, key);
+            }
+        }
+
+        public void TryMark(string uri, string endpoint)
+        {
+            lock (_locker)
+            {
+                var (ok, key, _) = TrySplitKeyParams(endpoint);
+                if (ok == false)
+                {
+                    return;
+                }
+
+                var destinationContainer = _storage[key];
+                destinationContainer.Mark(uri);
             }
         }
 

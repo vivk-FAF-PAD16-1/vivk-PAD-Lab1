@@ -3,15 +3,18 @@ using System.Collections.Generic;
 
 namespace Discovery.Storage
 {
-    public readonly struct Destination : IEquatable<Destination>
+    public struct Destination : IEquatable<Destination>
     {
         public string Uri { get; }
+
+        public int Mark { get; set; }
 
         public Destination(string uri)
         {
             Uri = uri;
+            Mark = 0;
         }
-
+        
         public bool Equals(Destination other)
         {
             return Uri == other.Uri;
@@ -30,6 +33,8 @@ namespace Discovery.Storage
     
     public class DestinationContainer
     {
+        private const int MaxMarks = 3;
+        
         private List<Destination> _container;
 
         private int _currentIndex;
@@ -92,10 +97,46 @@ namespace Discovery.Storage
                 }
 
                 _currentIndex = (_currentIndex + 1) % _container.Count;
+                if (_container[_currentIndex].Mark > 0)
+                {
+                    var destination = _container[_currentIndex];
+                    destination.Mark--;
+                    _container[_currentIndex] = destination;
+                }
+                
                 return (true, _container[_currentIndex].Uri);
             }
         }
-        
-        
+
+        public void Mark(string uri)
+        {
+            lock (_locker)
+            {
+                if (_container.Count == 0)
+                {
+                    return;
+                }
+                
+                for (var i = 0; i < _container.Count; i++)
+                {
+                    if (string.Equals(uri, _container[i].Uri))
+                    {
+                        var destination = _container[i];
+                        destination.Mark += 2;
+
+                        if (destination.Mark > MaxMarks)
+                        {
+                            Console.WriteLine($"Destination={uri} is removed!");
+                            _container.RemoveAt(i);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"INC: Mark of {destination.Uri} = {destination.Mark-1}");
+                            _container[i] = destination;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

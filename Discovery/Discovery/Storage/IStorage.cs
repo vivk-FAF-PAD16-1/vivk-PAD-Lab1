@@ -5,6 +5,7 @@ namespace Discovery.Storage
         void Register(string endpoint, string destinationUri);
         void Unregister(string endpoint, string destinationUri);
 
-        (bool, string) TryGet(string endpoint);
+        (bool, string, string, string) TryGet(string endpoint);
+        void TryMark(string uri, string endpoint);
     }
 }
