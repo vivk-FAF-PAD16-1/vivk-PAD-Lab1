@@ -43,6 +43,8 @@ namespace News.Router
             
             _counter.Register();
             
+            Console.WriteLine($"{segmentsCount} : {request.Url.AbsolutePath}");
+            
             switch (segmentsCount)
             {
                 case defaultIndex:
