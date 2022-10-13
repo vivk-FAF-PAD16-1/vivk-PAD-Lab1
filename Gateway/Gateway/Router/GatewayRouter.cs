@@ -16,6 +16,7 @@ namespace Gateway.Router
 		private readonly HttpClient _httpClient;
 
 		private const string Get = "GET";
+		private const string Put = "PUT";
 		
         public GatewayRouter(string discoveryUri)
         {
@@ -34,51 +35,74 @@ namespace Gateway.Router
 		{
 			var absolutePath = request.Url.AbsolutePath;
 			var discoveryFullUri = _discoveryUri + absolutePath;
+
+			HttpRequestMessage discoveryRequest = null;
+			HttpResponseMessage discoveryResponse = null;
+			HttpResponseMessage serviceResponse = null;
+
+			bool success;
+
+			do
+			{
+				discoveryRequest = new HttpRequestMessage(new HttpMethod(Get), discoveryFullUri);
+				
+				try
+				{
+					discoveryResponse = await _httpClient.SendAsync(discoveryRequest);
+				}
+				catch (Exception)
+				{
+					HttpUtilities.NotFoundResponse(response);
+					return;	
+				}
+
+				var discoveryContent = HttpUtilities.ReadResponseBody(discoveryResponse);
+				if (discoveryResponse.IsSuccessStatusCode == false)
+				{
+					HttpUtilities.NotFoundResponse(response);
+					return;
+				}
+
+				var uriData = JsonSerializer.Deserialize<UriData>(discoveryContent,
+					new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+				var content = HttpUtilities.ReadRequestBody(request);
+
+				var serviceUri = uriData.Uri + uriData.Param;
+				var serviceRequest = new HttpRequestMessage(new HttpMethod(request.HttpMethod), serviceUri);
 			
-			var discoveryRequest = new HttpRequestMessage(new HttpMethod(Get), discoveryFullUri);
-			HttpResponseMessage discoveryResponse;
+				if (request.HttpMethod != Get && content != string.Empty)
+				{
+					serviceRequest.Content = new StringContent(content, Encoding.UTF8, request.ContentType);
+				}
 
-			try
-			{
-				discoveryResponse = await _httpClient.SendAsync(discoveryRequest);
-			}
-			catch (Exception)
-			{
-				HttpUtilities.NotFoundResponse(response);
-				return;	
-			}
+				success = true;
+				
+				try
+				{
+					serviceResponse = await _httpClient.SendAsync(serviceRequest);
+				}
+				catch (Exception)
+				{
+					discoveryRequest = new HttpRequestMessage(new HttpMethod(Put), discoveryFullUri);
+					content = JsonSerializer.Serialize(uriData,
+						new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+					discoveryRequest.Content = new StringContent(content, Encoding.UTF8);
+					
+					try
+					{
+						await _httpClient.SendAsync(discoveryRequest);
+					}
+					catch (Exception)
+					{
+						HttpUtilities.NotFoundResponse(response);
+						return;	
+					}
+	
+					success = false;
+				}
+			} while (!success);
 
-			var discoveryContent = HttpUtilities.ReadResponseBody(discoveryResponse);
-			if (discoveryResponse.IsSuccessStatusCode == false)
-			{
-				HttpUtilities.NotFoundResponse(response);
-				return;
-			}
-
-			var uriData = JsonSerializer.Deserialize<UriData>(discoveryContent,
-				new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-			var content = HttpUtilities.ReadRequestBody(request);
-
-			var serviceRequest = new HttpRequestMessage(new HttpMethod(request.HttpMethod), uriData.Uri);
-			
-			if (request.HttpMethod != Get && content != string.Empty)
-			{
-				serviceRequest.Content = new StringContent(content, Encoding.UTF8, request.ContentType);
-			}
-			
-			HttpResponseMessage serviceResponse;
-
-			try
-			{
-				serviceResponse = await _httpClient.SendAsync(serviceRequest);
-			}
-			catch (Exception)
-			{
-				HttpUtilities.NotFoundResponse(response);
-				return;	
-			}
-			
 			var serviceContent = HttpUtilities.ReadResponseBody(serviceResponse);
 			var serviceStatusCode = (int)serviceResponse.StatusCode;
 			if (serviceContent != null)
